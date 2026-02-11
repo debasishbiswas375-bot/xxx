@@ -6,3 +6,8 @@ openpyxl
 gunicorn
 psycopg2-binary
 whitenoise==6.6.0
+streamlit
+supabase
+st-supabase-connection
+pandas
+openpyxl
