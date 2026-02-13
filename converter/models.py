@@ -1,37 +1,37 @@
-from django.db import models  # <--- THIS WAS MISSING!
-from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.utils.text import slugify
 
-# 1. Custom User Model
-class User(AbstractUser):
-    pass 
+# Added for AccountingCoach style structure
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, blank=True)
+    
+    class Meta:
+        verbose_name_plural = "Categories"
 
-# 2. Conversion Logs (History)
-class ConversionLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    file_name = models.CharField(max_length=255)
-    status = models.CharField(max_length=50)  # "Success" or "Failed"
-    timestamp = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} - {self.file_name}"
+        return self.name
 
-# 3. Product Model (What you sell)
-class Product(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    is_active = models.BooleanField(default=True)
+class Topic(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics')
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
+    summary = models.TextField(help_text="Short description for the list view")
+    content = models.TextField(help_text="The main educational text (supports HTML)")
+    is_pro = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.name} - ${self.price}"
-
-# 4. Subscription Model (Who bought what)
-class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    start_date = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} - {self.product.name}"
+        return self.title
+
+# Keep your existing Product and ConversionLog models below this...
