@@ -1,5 +1,10 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.text import slugify
+
+# Fixes the AUTH_USER_MODEL deployment error
+class User(AbstractUser):
+    pass
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -20,10 +25,9 @@ class Topic(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics')
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True, blank=True)
-    summary = models.TextField(help_text="Short description for the list view")
-    content = models.TextField(help_text="The main educational text (supports HTML)")
+    summary = models.TextField()
+    content = models.TextField()
     is_pro = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -33,7 +37,6 @@ class Topic(models.Model):
     def __str__(self):
         return self.title
 
-# Keep your existing Product and ConversionLog models here as well
 class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
