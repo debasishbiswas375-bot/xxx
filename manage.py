@@ -1,19 +1,32 @@
-#!/usr/bin/env python
-import os
-import sys
+from django.db import models
+from django.utils.text import slugify
 
-def main():
-    """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mysite.settings')
-    try:
-        from django.core.management import execute_from_command_line
-    except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
-    execute_from_command_line(sys.argv)
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True, blank=True)
+    icon_class = models.CharField(max_length=50, help_text="FontAwesome icon class (e.g., fa-book)")
 
-if __name__ == '__main__':
-    main()
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+class Topic(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='topics')
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True)
+    summary = models.TextField(help_text="Short description for the list view")
+    content = models.TextField(help_text="The main educational text (supports HTML)")
+    is_pro = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
