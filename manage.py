@@ -2,7 +2,6 @@ import os
 import sys
 
 def main():
-    # Ensure this matches your project folder name exactly
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'accountingtools.settings')
     try:
         from django.core.management import execute_from_command_line
